@@ -1,4 +1,5 @@
 import { ArrowRight, BarChart3 } from 'lucide-react';
+import { useMemo } from 'react';
 import { Link, useOutletContext } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import type { AppOutletContext } from '../layouts/AppLayout';
@@ -8,6 +9,32 @@ export function HomePage() {
   const { profile } = useAuth();
   const { modules } = useOutletContext<AppOutletContext>();
   const firstName = profile?.fullName.split(' ')[0] ?? '';
+  const groupedModules = useMemo(() => {
+    const groups = modules.reduce<
+      Array<{ key: string; name: string; sortOrder: number; modules: typeof modules }>
+    >((acc, module) => {
+      const key = module.group ? `group-${module.group.id}` : 'ungrouped';
+      let group = acc.find((item) => item.key === key);
+      if (!group) {
+        group = {
+          key,
+          name: module.group?.name ?? 'Geral',
+          sortOrder: module.group?.sortOrder ?? 9999,
+          modules: [],
+        };
+        acc.push(group);
+      }
+      group.modules.push(module);
+      return acc;
+    }, []);
+
+    return groups
+      .map((group) => ({
+        ...group,
+        modules: [...group.modules].sort((a, b) => a.sortOrder - b.sortOrder),
+      }))
+      .sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name));
+  }, [modules]);
 
   return (
     <div className="space-y-6">
@@ -26,36 +53,43 @@ export function HomePage() {
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-500">
           Seus módulos
         </h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {modules.map((module) => {
-            const Icon = moduleIcon(module.icon);
-            return (
-              <Link
-                key={module.id}
-                to={module.route}
-                className="group flex items-start gap-4 rounded-xl border border-slate-200 bg-white p-5
-                           shadow-sm transition hover:-translate-y-0.5 hover:border-cadan-blue-300 hover:shadow-md"
-              >
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-cadan-blue-50 text-cadan-blue-700 transition group-hover:bg-cadan-yellow-400/20 group-hover:text-cadan-blue-800">
-                  <Icon size={22} />
-                </span>
-                <span className="min-w-0">
-                  <span className="flex items-center gap-1.5 font-semibold text-slate-800">
-                    {module.name}
-                    <ArrowRight
-                      size={14}
-                      className="opacity-0 transition group-hover:translate-x-0.5 group-hover:opacity-100"
-                    />
-                  </span>
-                  {module.description && (
-                    <span className="mt-0.5 block truncate text-sm text-slate-500">
-                      {module.description}
-                    </span>
-                  )}
-                </span>
-              </Link>
-            );
-          })}
+        <div className="space-y-5">
+          {groupedModules.map((group) => (
+            <div key={group.key}>
+              <h3 className="mb-2 text-sm font-semibold text-slate-700">{group.name}</h3>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {group.modules.map((module) => {
+                  const Icon = moduleIcon(module.icon);
+                  return (
+                    <Link
+                      key={module.id}
+                      to={module.route}
+                      className="group flex items-start gap-4 rounded-lg border border-slate-200 bg-white p-5
+                                 shadow-sm transition hover:-translate-y-0.5 hover:border-cadan-blue-300 hover:shadow-md"
+                    >
+                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-cadan-blue-50 text-cadan-blue-700 transition group-hover:bg-cadan-yellow-400/20 group-hover:text-cadan-blue-800">
+                        <Icon size={22} />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="flex items-center gap-1.5 font-semibold text-slate-800">
+                          {module.name}
+                          <ArrowRight
+                            size={14}
+                            className="opacity-0 transition group-hover:translate-x-0.5 group-hover:opacity-100"
+                          />
+                        </span>
+                        {module.description && (
+                          <span className="mt-0.5 block truncate text-sm text-slate-500">
+                            {module.description}
+                          </span>
+                        )}
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 

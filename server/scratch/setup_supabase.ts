@@ -39,6 +39,16 @@ create table if not exists public.profiles (
   updated_at timestamptz not null default now()
 );
 
+-- Grupos para organizar os dashboards no sidebar (ex.: Financeiro, Compras)
+create table if not exists public.module_groups (
+  id serial primary key,
+  slug text not null unique,
+  name text not null,
+  icon text,
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now()
+);
+
 create table if not exists public.modules (
   id serial primary key,
   slug text not null unique,
@@ -50,6 +60,9 @@ create table if not exists public.modules (
   is_active boolean not null default true,
   created_at timestamptz not null default now()
 );
+
+alter table public.modules
+  add column if not exists group_id integer references public.module_groups(id) on delete set null;
 
 create table if not exists public.role_permissions (
   role_id integer not null references public.roles(id) on delete cascade,
@@ -105,7 +118,20 @@ create trigger on_auth_user_created
 alter table public.roles enable row level security;
 alter table public.profiles enable row level security;
 alter table public.modules enable row level security;
+alter table public.module_groups enable row level security;
 alter table public.role_permissions enable row level security;
+
+-- Supabase pode não expor/grantar tabelas novas automaticamente na Data API.
+-- O backend usa service_role via supabase-js; grants explícitos evitam erro 42501.
+grant usage on schema public to service_role;
+grant select, insert, update, delete on
+  public.roles,
+  public.profiles,
+  public.modules,
+  public.module_groups,
+  public.role_permissions
+to service_role;
+grant usage, select on all sequences in schema public to service_role;
 
 -- O backend usa a service role (bypassa RLS). As policies abaixo são o
 -- mínimo para leitura pelo frontend autenticado, se um dia for necessário.
@@ -119,6 +145,10 @@ create policy "roles_select_auth" on public.roles
 
 drop policy if exists "modules_select_auth" on public.modules;
 create policy "modules_select_auth" on public.modules
+  for select to authenticated using (true);
+
+drop policy if exists "module_groups_select_auth" on public.module_groups;
+create policy "module_groups_select_auth" on public.module_groups
   for select to authenticated using (true);
 
 drop policy if exists "role_permissions_select_auth" on public.role_permissions;
@@ -136,6 +166,18 @@ insert into public.modules (slug, name, description, icon, route, sort_order) va
   ('home', 'Início', 'Página inicial do portal', 'home', '/', 0),
   ('admin', 'Área Administrativa', 'Gestão de usuários, papéis e permissões', 'shield', '/admin', 90)
 on conflict (slug) do nothing;
+
+insert into public.module_groups (slug, name, icon, sort_order) values
+  ('financeiro', 'Financeiro', 'finance', 10)
+on conflict (slug) do nothing;
+
+insert into public.modules (slug, name, description, icon, route, sort_order) values
+  ('inadimplencia', 'Inadimplência', 'Visão gerencial da inadimplência de clientes', 'finance', '/dashboards/inadimplencia', 10)
+on conflict (slug) do nothing;
+
+update public.modules
+   set group_id = (select id from public.module_groups where slug = 'financeiro')
+ where slug = 'inadimplencia' and group_id is null;
 
 -- admin enxerga tudo (com edição); user enxerga apenas o início
 insert into public.role_permissions (role_id, module_id, can_view, can_edit)

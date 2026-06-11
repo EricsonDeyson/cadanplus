@@ -1,5 +1,17 @@
 import { supabaseAdmin } from '../../../clients/supabase';
-import type { ModuleDto } from '../dto/modules.dto';
+import type { ModuleDto, ModuleGroupDto } from '../dto/modules.dto';
+
+function mapGroup(raw: any): ModuleGroupDto | null {
+  const group = Array.isArray(raw) ? raw[0] : raw;
+  if (!group) return null;
+  return {
+    id: group.id,
+    slug: group.slug,
+    name: group.name,
+    icon: group.icon,
+    sortOrder: group.sort_order,
+  };
+}
 
 /** Módulos visíveis para um papel (role), ordenados para o sidebar. */
 export async function findModulesForRole(roleId: number | null): Promise<ModuleDto[]> {
@@ -7,7 +19,9 @@ export async function findModulesForRole(roleId: number | null): Promise<ModuleD
 
   const { data, error } = await supabaseAdmin
     .from('role_permissions')
-    .select('can_edit, module:modules(id, slug, name, description, icon, route, sort_order, is_active)')
+    .select(
+      'can_edit, module:modules(id, slug, name, description, icon, route, sort_order, is_active, group:module_groups(id, slug, name, icon, sort_order))',
+    )
     .eq('role_id', roleId)
     .eq('can_view', true);
 
@@ -27,6 +41,7 @@ export async function findModulesForRole(roleId: number | null): Promise<ModuleD
           route: m.route,
           sortOrder: m.sort_order,
           canEdit: row.can_edit,
+          group: mapGroup(m.group),
         } satisfies ModuleDto,
       ];
     })

@@ -4,6 +4,7 @@ import { AppLayout } from './layouts/AppLayout';
 import { AdminPage } from './pages/AdminPage';
 import { FirstAccessPage } from './pages/FirstAccessPage';
 import { HomePage } from './pages/HomePage';
+import { InadimplenciaPage } from './pages/InadimplenciaPage';
 import { LoginPage } from './pages/LoginPage';
 import logoCadan from './assets/logo_cadan.png';
 
@@ -38,6 +39,7 @@ export default function App() {
         <Route element={<AppLayout />}>
           <Route index element={<HomePage />} />
           <Route path="/admin" element={<AdminPage />} />
+          <Route path="/dashboards/inadimplencia" element={<InadimplenciaPage />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

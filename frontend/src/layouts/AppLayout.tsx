@@ -10,6 +10,7 @@ import type { ModuleItem } from '../types';
 
 export interface AppOutletContext {
   modules: ModuleItem[];
+  refreshModules: () => Promise<void>;
 }
 
 export function AppLayout() {
@@ -18,10 +19,14 @@ export function AppLayout() {
   const [modules, setModules] = useState<ModuleItem[]>([]);
   const [openModal, setOpenModal] = useState<SettingsAction | null>(null);
 
-  useEffect(() => {
-    api<{ modules: ModuleItem[] }>('/api/modules')
+  async function refreshModules() {
+    await api<{ modules: ModuleItem[] }>('/api/modules')
       .then((data) => setModules(data.modules))
       .catch(() => setModules([]));
+  }
+
+  useEffect(() => {
+    refreshModules();
   }, []);
 
   return (
@@ -37,7 +42,7 @@ export function AppLayout() {
         className={`min-h-screen pt-14 transition-[padding] duration-200 ${sidebarExpanded ? 'pl-60' : 'pl-16'}`}
       >
         <div className="mx-auto max-w-7xl p-6">
-          <Outlet context={{ modules } satisfies AppOutletContext} />
+          <Outlet context={{ modules, refreshModules } satisfies AppOutletContext} />
         </div>
       </main>
 

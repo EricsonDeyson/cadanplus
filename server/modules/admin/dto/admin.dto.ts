@@ -1,4 +1,4 @@
-export interface ModuleGroupDto {
+export interface GroupDto {
   id: number;
   slug: string;
   name: string;
@@ -6,7 +6,7 @@ export interface ModuleGroupDto {
   sortOrder: number;
 }
 
-export interface ModuleDto {
+export interface AdminModuleDto {
   id: number;
   slug: string;
   name: string;
@@ -14,6 +14,11 @@ export interface ModuleDto {
   icon: string | null;
   route: string;
   sortOrder: number;
-  canEdit: boolean;
-  group: ModuleGroupDto | null;
+  isActive: boolean;
+  groupId: number | null;
+}
+
+export interface GroupsOverviewDto {
+  groups: GroupDto[];
+  modules: AdminModuleDto[];
 }
