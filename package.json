@@ -1,0 +1,15 @@
+{
+  "name": "cadanplus",
+  "version": "0.1.0",
+  "private": true,
+  "description": "CadanPlus — Portal de Relatórios CADAN",
+  "scripts": {
+    "dev": "concurrently -n server,frontend -c blue,yellow \"npm --prefix server run dev\" \"npm --prefix frontend run dev\"",
+    "dev:server": "npm --prefix server run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "install:all": "npm --prefix server install && npm --prefix frontend install"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.3"
+  }
+}

@@ -1,0 +1,39 @@
+@import 'tailwindcss';
+
+/*
+ * Paleta CADAN — derivada das cores da logo:
+ *   Azul  #2d376f  → cadan-blue-700
+ *   Amarelo #fab82c → cadan-yellow-400
+ */
+@theme {
+  --color-cadan-blue-50: #eef0f9;
+  --color-cadan-blue-100: #d8dcf0;
+  --color-cadan-blue-200: #b3bbe0;
+  --color-cadan-blue-300: #8d99d0;
+  --color-cadan-blue-400: #6877b8;
+  --color-cadan-blue-500: #4a589c;
+  --color-cadan-blue-600: #3a4685;
+  --color-cadan-blue-700: #2d376f;
+  --color-cadan-blue-800: #232b58;
+  --color-cadan-blue-900: #1a2042;
+  --color-cadan-blue-950: #11152c;
+
+  --color-cadan-yellow-50: #fef8e8;
+  --color-cadan-yellow-100: #fdecc4;
+  --color-cadan-yellow-200: #fbdd8f;
+  --color-cadan-yellow-300: #fbcd5a;
+  --color-cadan-yellow-400: #fab82c;
+  --color-cadan-yellow-500: #e69f10;
+  --color-cadan-yellow-600: #c4820b;
+  --color-cadan-yellow-700: #9c650d;
+  --color-cadan-yellow-800: #7e5112;
+  --color-cadan-yellow-900: #684214;
+  --color-cadan-yellow-950: #3d2507;
+
+  --font-sans:
+    'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+}
+
+body {
+  @apply bg-slate-100 text-slate-800 antialiased;
+}
